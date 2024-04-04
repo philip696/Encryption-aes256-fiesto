@@ -48,9 +48,9 @@
                 
                         // Encrypt the file content
                         $fileData = file_get_contents($_FILES["image"]["tmp_name"]);
-                        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-ctr'));
-                        $encryptedData = openssl_encrypt($fileData, 'aes-256-ctr', $password, 0, $iv);
-                        $decryptedData = openssl_decrypt($encryptedData, 'aes-256-ctr', $password, 0, $iv);
+                        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+                        $encryptedData = openssl_encrypt($fileData, 'aes-256-cbc', $password, 1, $iv);
+                        $decryptedData = openssl_decrypt($encryptedData, 'aes-256-cbc', $password, 1, $iv);
 
                         //Get file size
                         //Save File into local storage
