@@ -63,21 +63,19 @@
                             $tmp = imagecreatetruecolor($newwidth, $newheight);
                             imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 
-                            // Replace $fileData with resized image
+                            // Convert all image type (except GIF) to jpeg to save space
                             ob_start();
                             switch($filetype) {
                                 case 'image/jpeg':
                                 case 'image/jpg':
-                                    imagejpeg($tmp, null, 80); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
-                                    break;
                                 case 'image/png':
-                                    imagepng($tmp, null, 9); // Output PNG image data .... 0 = largest file size .... 9 = smallest file size
+                                    imagejpeg($tmp, null, 80); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
                                     break;
                                 case 'image/gif':
                                     imagegif($tmp); // Output GIF image data
                                     break;
                             }
-                            $compressed_resizedImage = ob_get_clean(); // Get captured image data
+                            $compressed_resizedImage = ob_get_clean(); // Get captured compressed image data
                             // Clean up resources
                             imagedestroy($src);
                             imagedestroy($tmp);
