@@ -20,7 +20,6 @@
         </form>
         <?php
 
-
         // Check if the form was submitted
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Check if file was uploaded without errors
@@ -69,10 +68,10 @@
                             switch($filetype) {
                                 case 'image/jpeg':
                                 case 'image/jpg':
-                                    imagejpeg($tmp, null, 90); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
+                                    imagejpeg($tmp, null, 80); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
                                     break;
                                 case 'image/png':
-                                    imagepng($tmp, null, 3); // Output PNG image data .... 0 = largest file size .... 9 = smallest file size
+                                    imagepng($tmp, null, 9); // Output PNG image data .... 0 = largest file size .... 9 = smallest file size
                                     break;
                                 case 'image/gif':
                                     imagegif($tmp); // Output GIF image data
@@ -100,13 +99,12 @@
                         // Encrypt the file content
                         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
                         $encryptedData = openssl_encrypt($compressed_resizedImage, 'aes-256-cbc', $password, 1, $iv);
-                        $decryptedData = openssl_decrypt($encryptedData, 'aes-256-cbc', $password, 1, $iv);
 
                         //Get file size
                         //Save File into local storage
-                        $file_encrypted = 'result' . rand(4, 999999999999999999); // Path to your text file
+                        $file_encrypted = 'result' . rand(4, 999999999999999999) . ".jpg"; // Path to your text file
                         $handle_encrypted = fopen($file_encrypted, 'w');
-                        fwrite($handle_encrypted, $compressed_resizedImage);
+                        fwrite($handle_encrypted, $encryptedData);
                         fclose($handle_encrypted);
                         //check if the file is saved
                         if (file_exists($file_encrypted)) {
@@ -116,18 +114,10 @@
                             die ("File does not exist.");
                         }
 
-                        //Get De-crypted image file
-                        $image_decrypted = 'DecryptedImage' . rand(4, 999999999999999999) . '.jpg'; // Path to your text file
-                        $handle_decrypted = fopen($image_decrypted, 'w');
-                        fwrite($handle_decrypted, $decryptedData);
-                        fclose($handle_decrypted);
-                        //check if the file is saved
-                        if (file_exists($image_decrypted)) {
-                            // Display the image
-                            echo "File is already encrypted and decrypted." . "<br>";
-                        } else {
-                            echo "Image not found.";
-                        }
+                        //handle image decryption without saving
+                        $decryptedData = openssl_decrypt($encryptedData, 'aes-256-cbc', $password, 1, $iv);
+                        $base64Image = base64_encode($decryptedData); // Adjust content type based on your image type
+                        $dataUri = 'data:' . $filetype . ';base64,' . $base64Image;
 
                         //Print all variables
                         echo "Original file size: " . $filesize . "Bytes.";
@@ -138,7 +128,7 @@
                         echo '<br>';
                         echo "File size after encryption: " . $size_encrypted . "Bytes.";
                         echo '<br>';
-                        echo "<div class = 'container'> <img src='" . $image_decrypted . "' alt='Example Image'> </div>";
+                        echo "<div class = 'container'> <img src='$dataUri'; alt='Decrypted Image'> </div>";
                         echo '<br>';
                         echo '<br>';
                         echo '<br>';
