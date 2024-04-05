@@ -18,15 +18,18 @@
             <button type="submit">Upload Image</button>
             
         </form>
-            <?php
+        <?php
+
+
         // Check if the form was submitted
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Check if file was uploaded without errors
             if (isset($_FILES["image"]) && $_FILES["image"]["error"] == 0) {
-                $allowed = ["jpg" => "image/jpg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png"];
+                $allowed = ["jpg" => "image/jpeg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png"];
                 $filename = $_FILES["image"]["name"];
                 $filetype = $_FILES["image"]["type"];
                 $filesize = $_FILES["image"]["size"];
+                $fileData = file_get_contents($_FILES["image"]["tmp_name"]);
             
                 // Verify file extension
                 $ext = pathinfo($filename, PATHINFO_EXTENSION);
@@ -34,7 +37,59 @@
             
                 // Verify file size - 5MB maximum
                 $maxsize = 5 * 1024 * 1024;
-                if ($filesize > $maxsize) die("Error: File size is larger than the allowed limit.");
+                if ($filesize > $maxsize) {
+                    // Create image resource based on file type
+                    switch($filetype) {
+                        case 'image/jpeg':
+                        case 'image/jpg':
+                            $src = imagecreatefromjpeg($_FILES["image"]["tmp_name"]);
+                            break;
+                        case 'image/png':
+                            $src = imagecreatefrompng($_FILES["image"]["tmp_name"]);
+                            break;
+                        case 'image/gif':
+                            $src = imagecreatefromgif($_FILES["image"]["tmp_name"]);
+                            break;
+                        default:
+                            die("Error: Unsupported image format.");
+                    }
+                    
+                        // Resize the image
+                    list($width, $height) = getimagesize($_FILES["image"]["tmp_name"]);
+                    $longest = max($width, $height);
+                    if ($longest > 1024){
+                        $scale = (1024/$longest);
+                        $newwidth = round($width * $scale);   // Resized image width
+                        $newheight = round($height * $scale); // Resized image height
+                    
+                
+                        if ($newwidth > 0 && $newheight > 0) {
+                            $tmp = imagecreatetruecolor($newwidth, $newheight);
+                            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+
+                            // Replace $fileData with resized image
+                            ob_start();
+                            switch($filetype) {
+                                case 'image/jpeg':
+                                case 'image/jpg':
+                                    imagejpeg($tmp, null, 50); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
+                                    break;
+                                case 'image/png':
+                                    imagepng($tmp, null, 3); // Output PNG image data .... 0 = largest file size .... 9 = smallest file size
+                                    break;
+                                case 'image/gif':
+                                    imagegif($tmp); // Output GIF image data
+                                    break;
+                            }
+                            $fileData = ob_get_clean(); // Get captured image data
+                            // Clean up resources
+                            imagedestroy($src);
+                            imagedestroy($tmp);
+                        } else {
+                            die("Error: Invalid image dimensions.");
+                        }
+                    }
+                }
 
                         // Use the salt from the environment variable
                         $salt = getenv('REMOTE_ADDR');
@@ -47,7 +102,6 @@
                         // $key = openssl_pbkdf2($password, $salt, 32, 10000, 'sha256');
                 
                         // Encrypt the file content
-                        $fileData = file_get_contents($_FILES["image"]["tmp_name"]);
                         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
                         $encryptedData = openssl_encrypt($fileData, 'aes-256-cbc', $password, 1, $iv);
                         $decryptedData = openssl_decrypt($encryptedData, 'aes-256-cbc', $password, 1, $iv);
@@ -56,7 +110,7 @@
                         //Save File into local storage
                         $file_encrypted = 'result' . rand(4, 999999999999999999); // Path to your text file
                         $handle_encrypted = fopen($file_encrypted, 'w');
-                        fwrite($handle_encrypted, $encryptedData);
+                        fwrite($handle_encrypted, $fileData);
                         fclose($handle_encrypted);
                         //check if the file is saved
                         if (file_exists($file_encrypted)) {
@@ -67,7 +121,7 @@
                         }
 
                         //Get De-crypted image file
-                        $image_decrypted = 'DecryptedImage' . rand(4, 999999999999999999); // Path to your text file
+                        $image_decrypted = 'DecryptedImage' . rand(4, 999999999999999999) . '.jpg'; // Path to your text file
                         $handle_decrypted = fopen($image_decrypted, 'w');
                         fwrite($handle_decrypted, $decryptedData);
                         fclose($handle_decrypted);
