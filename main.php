@@ -29,33 +29,30 @@
                 $filename = $_FILES["image"]["name"];
                 $filetype = $_FILES["image"]["type"];
                 $filesize = $_FILES["image"]["size"];
-                $fileData = file_get_contents($_FILES["image"]["tmp_name"]);
+                $fileData = $_FILES["image"]["tmp_name"];
             
                 // Verify file extension
                 $ext = pathinfo($filename, PATHINFO_EXTENSION);
                 if (!array_key_exists($ext, $allowed)) die("Error: Please select a valid file format.");
             
-                // Verify file size - 5MB maximum
-                $maxsize = 5 * 1024 * 1024;
-                if ($filesize > $maxsize) {
                     // Create image resource based on file type
-                    switch($filetype) {
-                        case 'image/jpeg':
-                        case 'image/jpg':
-                            $src = imagecreatefromjpeg($_FILES["image"]["tmp_name"]);
-                            break;
-                        case 'image/png':
-                            $src = imagecreatefrompng($_FILES["image"]["tmp_name"]);
-                            break;
-                        case 'image/gif':
-                            $src = imagecreatefromgif($_FILES["image"]["tmp_name"]);
-                            break;
-                        default:
-                            die("Error: Unsupported image format.");
+                switch($filetype) {
+                    case 'image/jpeg':
+                    case 'image/jpg':
+                        $src = imagecreatefromjpeg($fileData);
+                        break;
+                    case 'image/png':
+                        $src = imagecreatefrompng($fileData);
+                        break;
+                    case 'image/gif':
+                        $src = imagecreatefromgif($fileData);
+                        break;
+                    default:
+                        die("Error: Unsupported image format.");
                     }
-                    
+
                         // Resize the image
-                    list($width, $height) = getimagesize($_FILES["image"]["tmp_name"]);
+                    list($width, $height) = getimagesize($fileData);
                     $longest = max($width, $height);
                     if ($longest > 1024){
                         $scale = (1024/$longest);
@@ -72,7 +69,7 @@
                             switch($filetype) {
                                 case 'image/jpeg':
                                 case 'image/jpg':
-                                    imagejpeg($tmp, null, 50); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
+                                    imagejpeg($tmp, null, 90); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
                                     break;
                                 case 'image/png':
                                     imagepng($tmp, null, 3); // Output PNG image data .... 0 = largest file size .... 9 = smallest file size
@@ -81,7 +78,7 @@
                                     imagegif($tmp); // Output GIF image data
                                     break;
                             }
-                            $fileData = ob_get_clean(); // Get captured image data
+                            $compressed_resizedImage = ob_get_clean(); // Get captured image data
                             // Clean up resources
                             imagedestroy($src);
                             imagedestroy($tmp);
@@ -89,7 +86,6 @@
                             die("Error: Invalid image dimensions.");
                         }
                     }
-                }
 
                         // Use the salt from the environment variable
                         $salt = getenv('REMOTE_ADDR');
@@ -103,14 +99,14 @@
                 
                         // Encrypt the file content
                         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-                        $encryptedData = openssl_encrypt($fileData, 'aes-256-cbc', $password, 1, $iv);
+                        $encryptedData = openssl_encrypt($compressed_resizedImage, 'aes-256-cbc', $password, 1, $iv);
                         $decryptedData = openssl_decrypt($encryptedData, 'aes-256-cbc', $password, 1, $iv);
 
                         //Get file size
                         //Save File into local storage
                         $file_encrypted = 'result' . rand(4, 999999999999999999); // Path to your text file
                         $handle_encrypted = fopen($file_encrypted, 'w');
-                        fwrite($handle_encrypted, $fileData);
+                        fwrite($handle_encrypted, $compressed_resizedImage);
                         fclose($handle_encrypted);
                         //check if the file is saved
                         if (file_exists($file_encrypted)) {
@@ -134,17 +130,19 @@
                         }
 
                         //Print all variables
-                        echo "Filesize: " . $filesize . "Bytes.";
+                        echo "Original file size: " . $filesize . "Bytes.";
                         echo '<br>';
                         echo "Remote address: " . $_SERVER['REMOTE_ADDR'];
                         echo '<br>';
                         echo "Salt: " . $salt;
                         echo '<br>';
-                        echo "Filesize after encryption: " . $size_encrypted . "Bytes.";
+                        echo "File size after encryption: " . $size_encrypted . "Bytes.";
                         echo '<br>';
                         echo "<div class = 'container'> <img src='" . $image_decrypted . "' alt='Example Image'> </div>";
                         echo '<br>';
-                        echo "<div class = 'container'>your file was uploaded and encryptedsuccessfully.  <textarea name='result' rows='200' cols='200'>$encryptedData</textarea> </div>";
+                        echo '<br>';
+                        echo '<br>';
+                        echo "<div class = 'container'><b>your file was uploaded and encrypted successfully.</b><textarea name='result' rows='50' cols='150'>$encryptedData</textarea> </div>";
                         echo '<br>';
                         echo '<br>';
                         echo '<br>';
@@ -155,27 +153,14 @@
                         echo '<br>';
                         echo '<br>';
                         echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo "<div class = 'container'> your file was uploaded and decrypted successfully. <textarea name='result' rows='200' cols='200'>  $decryptedData</textarea></div>";
+                        echo "<div class = 'container'> <b>your file was uploaded and decrypted successfully.</b> <textarea name='result' rows='50' cols='150'>  $decryptedData</textarea></div>";
                         
                         // echo "Your file was uploaded and encrypted successfully." . $decryptedData;
                 
                     } else {
                         echo "Error: " . $_FILES["image"]["error"];
                     }
-            } else {
-                echo "Error: " . $_FILES["image"]["error"];
-        }
+            }
         ?>
     </div>  
 
