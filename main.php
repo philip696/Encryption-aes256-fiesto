@@ -23,7 +23,7 @@
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Check if file was uploaded without errors
             if (isset($_FILES["image"]) && $_FILES["image"]["error"] == 0) {
-                $allowed = ["jpg" => "image/jpeg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png"];
+                $allowed = ["jpg" => "image/jpg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png"];
                 $filename = $_FILES["image"]["name"];
                 $filetype = $_FILES["image"]["type"];
                 $filesize = $_FILES["image"]["size"];
@@ -54,7 +54,7 @@
 
                         //Get file size
                         //Save File into local storage
-                        $file_encrypted = 'result' . rand(4, 999999999999999999) . 'txt'; // Path to your text file
+                        $file_encrypted = 'result' . rand(4, 999999999999999999); // Path to your text file
                         $handle_encrypted = fopen($file_encrypted, 'w');
                         fwrite($handle_encrypted, $encryptedData);
                         fclose($handle_encrypted);
@@ -67,7 +67,7 @@
                         }
 
                         //Get De-crypted image file
-                        $image_decrypted = 'DecryptedImage' . rand(4, 999999999999999999) . 'png'; // Path to your text file
+                        $image_decrypted = 'DecryptedImage' . rand(4, 999999999999999999); // Path to your text file
                         $handle_decrypted = fopen($image_decrypted, 'w');
                         fwrite($handle_decrypted, $decryptedData);
                         fclose($handle_decrypted);
@@ -90,8 +90,29 @@
                         echo '<br>';
                         echo "<div class = 'container'> <img src='" . $image_decrypted . "' alt='Example Image'> </div>";
                         echo '<br>';
-                        echo "<div class = 'container'> <textarea name='result' rows='1000' cols='100'> $encryptedData</textarea> </div>";
-                        echo "<div class = 'container'> your file was uploaded and decrypted successfully. $decryptedData</div>";
+                        echo "<div class = 'container'>your file was uploaded and encryptedsuccessfully.  <textarea name='result' rows='200' cols='200'>$encryptedData</textarea> </div>";
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo "<div class = 'container'> your file was uploaded and decrypted successfully. <textarea name='result' rows='200' cols='200'>  $decryptedData</textarea></div>";
                         
                         // echo "Your file was uploaded and encrypted successfully." . $decryptedData;
                 
