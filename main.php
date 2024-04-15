@@ -48,16 +48,16 @@
                         break;
                     default:
                         die("Error: Unsupported image format.");
-                    }
+                }
 
                         // Resize the image
                     list($width, $height) = getimagesize($fileData);
                     $longest = max($width, $height);
+                    
                     if ($longest > 1024){
                         $scale = (1024/$longest);
                         $newwidth = round($width * $scale);   // Resized image width
                         $newheight = round($height * $scale); // Resized image height
-                    
                 
                         if ($newwidth > 0 && $newheight > 0) {
                             $tmp = imagecreatetruecolor($newwidth, $newheight);
@@ -65,16 +65,7 @@
 
                             // Convert all image type (except GIF) to jpeg to save space
                             ob_start();
-                            switch($filetype) {
-                                case 'image/jpeg':
-                                case 'image/jpg':
-                                case 'image/png':
-                                    imagejpeg($tmp, null, 80); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
-                                    break;
-                                case 'image/gif':
-                                    imagegif($tmp); // Output GIF image data
-                                    break;
-                            }
+                            imagejpeg($tmp, null, 80); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
                             $compressed_resizedImage = ob_get_clean(); // Get captured compressed image data
                             // Clean up resources
                             imagedestroy($src);
@@ -82,8 +73,16 @@
                         } else {
                             die("Error: Invalid image dimensions.");
                         }
-                    }
-
+                        
+                        // Bypass resize
+                    } elseif ($longest > 0 && $longest <= 1024) {
+                        ob_start();
+                        imagejpeg($src, null, 80);
+                        $compressed_resizedImage = ob_get_clean();
+                     } else {
+                        die("Error: Image not found.");
+                     }
+                    
                         // Use the salt from the environment variable
                         $salt = getenv('REMOTE_ADDR');
                         if (!$salt) {
