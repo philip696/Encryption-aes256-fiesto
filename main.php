@@ -79,9 +79,9 @@
                         ob_start();
                         imagejpeg($src, null, 80);
                         $compressed_resizedImage = ob_get_clean();
-                     } else {
+                    } else {
                         die("Error: Image not found.");
-                     }
+                    }
                     
                         // Use the salt from the environment variable
                         $salt = getenv('REMOTE_ADDR');
