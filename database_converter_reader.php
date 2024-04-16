@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Image Upload</title>
+    <title>MySQL Database Encoder and Decoder</title>
     <style>
         img {
             max-width: 70vw;
@@ -126,7 +126,7 @@
                             
                             //handle output if pdf
                             if($ext == "pdf"){
-                                echo '<embed src="data:application/pdf;base64,' . $base64Data . '" type="application/pdf" width="150%" height="150%">';
+                                echo '<embed src="data:application/pdf;base64,' . $base64Data . '" type="application/pdf" width="150%" height="100%">';
                                 echo '<a href="data:application/pdf;base64,' . $base64Data . '" download="' . $outputFileName . '">Download PDF</a>';
                                 echo "File Name: $outputFileName";
                             } else {
