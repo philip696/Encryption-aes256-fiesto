@@ -88,7 +88,18 @@
                         // Bypass resize
                     } elseif ($longest > 0 && $longest <= 1024) {
                         ob_start();
-                        imagejpeg($src, null, 80);
+                        switch($filetype) {
+                            case 'image/jpeg':
+                            case 'image/jpg':
+                                imagejpeg($tmp, null, 90); // Output JPEG image data .... 0 = highest compression, smallest file size .... 100 = lowest compression, largest file size
+                                break;
+                            case 'image/png':
+                                imagepng($tmp, null, 3); // Output PNG image data .... 0 = largest file size .... 9 = smallest file size
+                                break;
+                            case 'image/gif':
+                                imagegif($tmp); // Output GIF image data
+                                break;
+                        }
                         $compressed_resizedImage = ob_get_clean();
                     } else {
                         die("Error: Image not found.");
