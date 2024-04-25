@@ -16,25 +16,27 @@
         require_once "PDO.php";
 
         $file_database_name = "";
-
-        $stmt = $pdo->prepare("SELECT
-                                m_student_documents.id,
-                                m_student_documents.student, 
-                                m_students.birthdate,
-                                m_students.name,
-                                m_student_documents.student_document_type, 
-                                m_student_documents.filename,
-                                m_student_document_types.id as document_type_id,
-                                m_student_document_types.folder as document_type_folder,
-                                m_student_document_types.name as document_type_name
-                            FROM 
-                                m_student_documents
-                            INNER JOIN
-                                m_students ON m_student_documents.student = m_students.id
-                            INNER JOIN
-                                m_student_document_types ON m_student_document_types.id = m_student_documents.student_document_type
-                            WHERE
-                                m_student_documents.deleted = 0 AND m_student_documents.id != 0");
+        //get data from SQL query
+        $stmt = $pdo->prepare(" SELECT
+        m_student_documents.id,
+        m_student_documents.student, 
+        m_students.birthdate,
+        m_students.name,
+        m_student_documents.student_document_type, 
+        m_student_documents.filename,
+        m_student_document_types.id as document_type_id,
+        m_student_document_types.folder as document_type_folder,
+        m_student_document_types.name as document_type_name
+    FROM 
+        m_student_documents
+    INNER JOIN
+        m_students ON m_student_documents.student = m_students.id
+    INNER JOIN
+        m_student_document_types ON m_student_document_types.id = m_student_documents.student_document_type
+    WHERE
+        m_student_documents.deleted = 0 
+        AND m_student_documents.id != 0
+        AND m_student_documents.filename LIKE '%.pdf';");
                 $stmt->execute(); // Execute the prepared statement
                 $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -57,6 +59,8 @@
                         $filepath = "/Users/philipdewanto/Documents/photos/students//$filefolder/$filename"; //hardcoded filepath to make it easier.
                         $fileData = file_get_contents($filepath);
                         $outputFileName = $rows['name'] . "_" . $filefolder . ".pdf";
+
+                        print $fileData;
                     
                     // // Verify file extension
                         $ext = pathinfo($filename, PATHINFO_EXTENSION);
